@@ -1,14 +1,17 @@
 {
   "short_name": "WDYLT",
   "name": "What Did You Learn Today?",
-  "description": "Collect notes as learning path.",
+  "description": "Collect informations as learning path.",
   "version": "1.0",
   "manifest_version": 3,
   "action": {
     "default_popup": "index.html",
     "default_icon": "assets/logo96.png"
   },
-  "host_permissions": ["http://localhost/www/wp/wdylt/wp-json/*"],
+  "host_permissions": [
+    "http://localhost/www/wp/wdylt/wp-json/*",
+    "https://learn.wdylt.com/wp-json/*"
+  ],
   "permissions": [
     "storage"
   ]
