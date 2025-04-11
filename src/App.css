@@ -15,13 +15,14 @@
 
 .App-header {
   background-color: #282c34;
-  min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   font-size: calc(10px + 2vmin);
   color: white;
+  width: 500px;
+  padding: 32px;
 }
 
 .App-link {
@@ -35,4 +36,65 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+.Main {
+  width: 500px;
+}
+
+.Navlink .active {
+  color: #1e9ae0;
+  border-color: #1e9ae0;
+  background-color: #1e99e007;
+}
+
+.ck-editor__editable {
+  min-height: 120px;
+}
+
+.Notelist > li {
+  border-bottom: 1px solid #ccc;
+}
+
+.Notelist > li:last-child {
+  border-bottom: 0;
+}
+
+/* .Notelist .Content > * + * {
+  margin-top: 16px;
+} */
+
+.fc {
+  font-size: 14px;
+}
+
+.fc .fc-daygrid-body-unbalanced .fc-daygrid-day-events {
+  min-height: 1em;
+}
+
+.fc .fc-daygrid-day-top {
+  height: 28px;
+}
+
+.fc .fc-daygrid-event-harness {
+  height: 20px;
+  line-height: 20px;
+}
+
+.fc .fc-button {
+  padding: 0.2em 0.325em;
+}
+
+.fc .fc-toolbar-title {
+  font-size: 1.5em;
+}
+
+.fc-day-highlighted {
+  background-color: #d8ecff !important;
+}
+
+.formatted ul, 
+.formatted ol {
+  margin-left: 2.666em;
+  margin-bottom: .8em;
 }
