@@ -3,7 +3,7 @@
 import BaseLayout from "../layouts/Base";
 import '../index.css';
 import RichEditor from "../components/RichEditor";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {  useBlocker, useNavigate, useSearchParams } from "react-router";
 import { Formik } from "formik";
 import * as Yup from 'yup';

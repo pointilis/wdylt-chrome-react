@@ -149,7 +149,7 @@ const Todo = () => {
     });
 
     const markTodoHandler = async (todo: any, state: string) => {
-        const data = await markDoneMutation.mutateAsync({ id: todo.id, state: state });
+        await markDoneMutation.mutateAsync({ id: todo.id, state: state });
     }
 
     useEffect(() => {
@@ -202,7 +202,7 @@ const Todo = () => {
                     {todosData.length > 0 ? (
                         <ul className="Todolist">
                             {todosData.map((todo: any, index: number) => (
-                                <li key={todo.id} className={`text-lg py-4 px-4 border-b border-neutral-300 flex ${todo.meta.state == 'done' ? 'bg-lime-100' : ''}`}>
+                                <li key={todo.id} className={`text-lg py-4 px-4 border-b border-neutral-300 flex ${todo.meta.state === 'done' ? 'bg-lime-100' : ''}`}>
                                     <div className="w-8 h-8 flex-none mt-1">
                                         <div 
                                             className={`items-center justify-center flex h-full w-full borde ${todo.meta.state === 'done' ? 'bg-lime-600' : 'bg-orange-600'} text-white font-bold`}
