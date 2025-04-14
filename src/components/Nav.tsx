@@ -10,7 +10,11 @@ const Nav = () => {
             </li>
 
             <li>
-                <NavLink to="/notes" className="px-2 py-1 text-base border border-neutral-400 rounded-full" end>{'My Learns'}</NavLink>
+                <NavLink to="/notes" className="px-2 py-1 text-base border border-neutral-400 rounded-full" end>{'Notes'}</NavLink>
+            </li>
+
+            <li>
+                <NavLink to="/todos" className="px-2 py-1 text-base border border-neutral-400 rounded-full" end>{'Todos'}</NavLink>
             </li>
 
             <li>

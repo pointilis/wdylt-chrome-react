@@ -3,18 +3,19 @@
 import BaseLayout from "../layouts/Base";
 import '../index.css';
 import RichEditor from "../components/RichEditor";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {  useBlocker, useNavigate, useSearchParams } from "react-router";
 import { Formik } from "formik";
 import * as Yup from 'yup';
 import Axios from "../utils/Axios";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { title } from "process";
+import { useMutation } from "@tanstack/react-query";
+import Swal from "sweetalert2";
 
 const Home = () => {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const [pid, setPid] = useState<number | string>();
+    const [postType, setPostType] = useState<'post' | 'todo' | ''>('');
     const runInChromeExt = window.chrome && chrome.runtime && chrome.runtime.id;
     const blocker = useBlocker(
         ({ currentLocation, nextLocation }) => {
@@ -26,13 +27,18 @@ const Home = () => {
         }
     )
     
-    const [errMsg, setErrMsg] = useState<string>("");
     const [formValues, setFormValues] = useState<{ 
-        content: string, 
-        tags?: string 
+        title?: string,
+        content: string,
+        status?: string,
+        tags?: string,
+        meta?: any,
     }>({
+        title: "",
         content: "",
+        status: "",
         tags: "",
+        meta: {},
     });
     const editoRef = useRef<any>(() => {});
 
@@ -54,46 +60,19 @@ const Home = () => {
             });
         }
     }
-    
-    // Save post
-    const saveHandler = async (values: any = {}) => {
-        // reset the error
-        setErrMsg("");
 
-        // convert comma separated tags to array
-        let tags = values.tags ? values.tags.split(',').map((tag: string) => tag.trim()) : null;
-        values = {
-            ...values,
-            tags: tags,
-        }
-
-        let doc = new DOMParser().parseFromString(values.content, 'text/html');
-        let title =  doc.body.textContent || "";
-        const payload = {
-            ...values,
-            status: 'publish',
-            title: title.substring(0, 200),
-        }
-
-        try {
-            const { data } = await Axios.post('/wp/v2/posts', payload, {
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            });
-
+    // submit new mutation
+    const submitMutation = useMutation({
+        mutationFn: async (variables: any) => {
+            const { data } = await Axios.post(`/wp/v2/${variables.type}s`, variables.data);
             return data;
-        } catch (err: any) {
-            const { response } = err;
-            const msg = response.data.message;
-            setErrMsg(msg);
         }
-    }
+    });
 
     // retrieve single post
     const retrivePostMutation = useMutation({
         mutationFn: async (variables: any) => {
-            const { data } = await Axios.get('/wp/v2/posts/' + variables.pid);
+            const { data } = await Axios.get(`/wp/v2/${variables.type}s/${variables.pid}`);
             return data;
         },
         onSuccess: (data) => {
@@ -102,13 +81,14 @@ const Home = () => {
                 content: data.content.rendered,
                 tags: data.tags.map((obj: any) => obj.name).join(', '),
             });
+            setPostType(data.type);
         }
     });
 
     // update post
     const updatePostMutation = useMutation({
         mutationFn: async (variables: any) => {
-            const { data } = await Axios.post('/wp/v2/posts/' + pid, variables);
+            const { data } = await Axios.post(`/wp/v2/${postType}s/${pid}`, variables);
             return data;
         },
     });
@@ -147,7 +127,7 @@ const Home = () => {
                 window.localStorage.setItem('post', JSON.stringify(formValues));
             }
         }
-    }, [formValues]);
+    }, [formValues, runInChromeExt]);
 
     useEffect(() => {
         if (runInChromeExt) {
@@ -168,7 +148,7 @@ const Home = () => {
                 }, 50);
             }
         }
-    }, [setFormValues]);
+    }, [setFormValues, runInChromeExt]);
 
     useEffect(() => {
         if (runInChromeExt) {
@@ -178,25 +158,23 @@ const Home = () => {
                 }
             });
         }
-    }, []);
+    }, [runInChromeExt, navigate]);
 
     useEffect(() => {
         const pid = searchParams.get('pid');
+        const type = searchParams.get('type');
+
         if (pid) {
             setPid(pid);
-            retrivePostMutation.mutate({ pid: pid });
+            retrivePostMutation.mutate({ pid: pid, type: type });
         } else {
             setPid('');
         }
-    }, [searchParams]);
+    }, [searchParams, retrivePostMutation]);
 
     return (
         <BaseLayout>
             <div className="pt-3">
-                {errMsg !== "" ? (
-                    <div className="p-4 bg-rose-100 rounded-xl mb-4">{errMsg}</div>
-                ): null}
-
                 {blocker.state === "blocked" ? (
                     <div className="p-4 bg-rose-100 rounded-xl mb-4">
                         <p>{'Are you sure you want to leave? Content in the editor will deleted!'}</p>
@@ -215,19 +193,68 @@ const Home = () => {
                     initialValues={formValues}
                     validationSchema={PostSchema}
                     enableReinitialize={true}
-                    onSubmit={async (values, { setSubmitting, resetForm, setFieldTouched, setFieldValue, setFieldError, setErrors }) => {
-                        let data: any;
+                    onSubmit={async (values, { 
+                        setSubmitting, 
+                        resetForm, 
+                        setFieldTouched, 
+                        setFieldValue, 
+                        setFieldError, 
+                        setErrors,
+                    }) => {
+                        let state: string = '';
+                        if (postType === 'todo') {
+                            state = await Swal.fire({
+                                title: 'Set Todo State',
+                                icon: 'info',
+                                showCancelButton: true,
+                                cancelButtonText: 'Will do',
+                                cancelButtonColor: 'navy',
+                                showConfirmButton: true,
+                                confirmButtonText: 'Has done',
+                                confirmButtonColor: 'green',
+                            }).then((value: any) => {
+                                if (value.isDismissed) {
+                                    state = 'willdo';
+                                } else if (value.isConfirmed) {
+                                    state = 'done';
+                                }
 
-                        if (pid && pid != '') {
-                            // update
-                            await updatePostMutation.mutateAsync(values);
-                            data = {
-                                ...data,
-                                id: pid,
+                                return state;
+                            });
+                        }
+                        
+                        let data: any;
+                        let doc = new DOMParser().parseFromString(values.content, 'text/html');
+                        let title =  doc.body.textContent || "";
+                        values = {
+                            ...values,
+                            status: 'publish',
+                            title: title.substring(0, 200),
+                        }
+
+                        // set meta
+                        if (postType === 'todo') {
+                            values = {
+                                ...values,
+                                meta: {
+                                    ...values.meta,
+                                    'state': state,
+                                }
                             }
+                        }
+
+                        if (pid && pid !== '') {
+                            // update
+                            data = await updatePostMutation.mutateAsync({
+                                type: postType,
+                                data: values,
+                            });
                         } else {
                             // create
-                            data = await saveHandler(values);
+                            data = await submitMutation.mutateAsync({
+                                type: postType,
+                                data: values,
+                            });
                         }
 
                         setSubmitting(false);
@@ -247,8 +274,12 @@ const Home = () => {
                             } else {
                                 window.localStorage.removeItem('post');
                             }
-
-                            navigate('/notes?from=submit');
+                            
+                            if (data.type === 'post') {
+                                navigate('/notes?from=submit');
+                            } else if (data.type === 'todo') {
+                                navigate('/todos?from=submit');
+                            }
                         }
                     }}
                 >
@@ -266,14 +297,14 @@ const Home = () => {
                     }) => (
                         <form onSubmit={handleSubmit}>
                             <div className="flex items-center mb-2">
-                                <div className="text-xl font-bold">{'Save what you learned'}</div>
+                                <div className="text-xl font-bold">{'Save this as:'}</div>
 
                                 {pid ? (
                                     <div className="ml-auto">
                                         <div className="grid grid-cols-2 gap-3">
                                             <button 
                                                 type="button"
-                                                className="ml-auto px-3 text-base py-0.5 rounded-full uppercase tracking-widest border border-red-600 text-red-700"
+                                                className="ml-auto px-3 text-base py-1 rounded-full uppercase tracking-widest border border-red-600 text-red-700"
                                                 disabled={isSubmitting}
                                                 onClick={cancelHandler}
                                             >
@@ -282,7 +313,7 @@ const Home = () => {
 
                                             <button 
                                                 type="submit"
-                                                className="ml-auto px-3 text-base py-0.5 rounded-full uppercase tracking-widest bg-blue-600 hover:bg-blue-700 text-white"
+                                                className="ml-auto px-3 text-base py-1 rounded-full uppercase tracking-widest bg-blue-600 hover:bg-blue-700 text-white"
                                                 disabled={isSubmitting}
                                             >
                                                 {'Update'}
@@ -290,13 +321,27 @@ const Home = () => {
                                         </div>
                                     </div>
                                 ) : 
-                                    <button 
-                                        type="submit"
-                                        className="ml-auto px-6 py-2 rounded-full uppercase tracking-widest bg-blue-600 hover:bg-blue-700 text-white"
-                                        disabled={isSubmitting}
-                                    >
-                                        {'Submit'}
-                                    </button>
+                                    <div className="ml-auto grid grid-cols-2 gap-2">
+                                        <button 
+                                            type="submit"
+                                            className="submit-button ml-auto px-3 py-1 rounded-full uppercase text-base tracking-widest bg-lime-600 hover:bg-lime-700 text-white"
+                                            disabled={isSubmitting}
+                                            data-type="todo"
+                                            onClick={() => setPostType('todo')}
+                                        >
+                                            {'Todo'}
+                                        </button>
+
+                                        <button 
+                                            type="submit"
+                                            className="submit-button ml-auto px-3 py-1 rounded-full uppercase text-base tracking-widest bg-blue-600 hover:bg-blue-700 text-white"
+                                            disabled={isSubmitting}
+                                            data-type="post"
+                                            onClick={() => setPostType('post')}
+                                        >
+                                            {'Note'}
+                                        </button>
+                                    </div>
                                 }
                             </div>
                             

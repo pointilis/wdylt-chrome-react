@@ -1,13 +1,12 @@
-import logo from './logo.svg';
 import './App.css';
-import { createHashRouter, Navigate, Outlet, redirect, RouterProvider } from 'react-router';
+import { createHashRouter, Outlet, RouterProvider } from 'react-router';
 import Home from './screens/Home';
 import Tags from './screens/Tags';
 import Archive from './screens/Archive';
-import History from './screens/History';
+import Note from './screens/Note';
 import Register from './screens/Register';
-import { useEffect, useState } from 'react';
 import Login from './screens/Login';
+import Todo from './screens/Todo';
 
 const router = createHashRouter([
   {
@@ -16,7 +15,11 @@ const router = createHashRouter([
   },
   {
     path: "/notes",
-    element: <History />,
+    element: <Note />,
+  },
+  {
+    path: "/todos",
+    element: <Todo />,
   },
   {
     path: "/tags",

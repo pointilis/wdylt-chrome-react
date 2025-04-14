@@ -52,13 +52,13 @@
   min-height: 120px;
 }
 
-.Notelist > li {
+/* .Notelist > li {
   border-bottom: 1px solid #ccc;
 }
 
 .Notelist > li:last-child {
   border-bottom: 0;
-}
+} */
 
 /* .Notelist .Content > * + * {
   margin-top: 16px;

@@ -5,7 +5,7 @@ import Axios from "../utils/Axios";
 
 const Tags = () => {
     // tags
-    const { isLoading, isSuccess, data, refetch } = useQuery({
+    const { isLoading, isSuccess, data } = useQuery({
         queryKey: ['tags'],
         queryFn: async () => {
             const { data } = await Axios.get('/wp/v2/tags', {

@@ -1,4 +1,4 @@
-import React, { use, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import '../App.css';
 import '../index.css';
 import Nav from '../components/Nav';
@@ -29,7 +29,7 @@ const BaseLayout = ({ children }: {
                 }
             });
         }
-    }, [setUser]);
+    }, [setUser, runInChromeExt]);
 
     return (
         <main className='Main p-4 text-lg'>

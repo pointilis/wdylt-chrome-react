@@ -1,4 +1,4 @@
-import { useNavigate, useParams, useSearchParams } from "react-router";
+import { NavLink, useNavigate, useParams, useSearchParams } from "react-router";
 import BaseLayout from "../layouts/Base";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
@@ -10,7 +10,7 @@ const Archive = () => {
     let [searchParams] = useSearchParams();
     const navigate = useNavigate();
 
-    const [postArgs, setPostArgs] = useState<{
+    const [postArgs] = useState<{
         page: number
         per_page: number
         tags: any[]
@@ -21,7 +21,7 @@ const Archive = () => {
     });
 
     // posts
-    const { isLoading, isSuccess, data, refetch } = useQuery({
+    const { isLoading, isSuccess, data } = useQuery({
         queryKey: ['posts'],
         queryFn: async () => {
             const { data } = await Axios.get('/wp/v2/posts', {
@@ -62,8 +62,15 @@ const Archive = () => {
                                     </div>
                                     <div className="w-full pl-4">
                                         <h3 className="hidden text-xl font-semibold">{post.title.rendered}</h3>
-                                        <div className="block font-semibold">{format(post.date, 'dd MMMM yyyy HH:mm')}</div>
-                                        <div className="block mt-0 Content ck-content formatted" dangerouslySetInnerHTML={{ __html: post.content.rendered }}></div>
+                                        
+                                        <div className="flex">
+                                            <div className="block font-semibold">{format(post.date, 'dd MMMM yyyy HH:mm')}</div>
+                                            <div className="ml-auto">
+                                                <NavLink className={'text-blue-700 text-sm'} to={{ pathname: '/', search: `?pid=${post.id}&type=${post.type}` }}>{'Edit'}</NavLink>
+                                            </div>
+                                        </div>
+
+                                        <div className="block Content ck-content formatted p-4 bg-neutral-200 mt-2" dangerouslySetInnerHTML={{ __html: post.content.rendered }}></div>
                                         {post.tags.length > 0 ? (
                                             <ul className="flex flex-wrap gap-2 mt-2">
                                                 {post.tags.map((tag: any) => (

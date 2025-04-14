@@ -5,7 +5,7 @@ import { Formik } from "formik";
 import * as Yup from 'yup';
 import Axios from "../utils/Axios";
 import { useEffect, useState } from "react";
-import { NavLink, redirect, useNavigate } from "react-router";
+import { NavLink, useNavigate } from "react-router";
 import logo from '../logo.png';
 
 const Register = () => {
@@ -84,7 +84,7 @@ const Register = () => {
                 }
             });
         }
-    }, [])
+    }, [navigate, runInChromeExt])
 
     return (
         <main className='Main p-4 text-lg'>

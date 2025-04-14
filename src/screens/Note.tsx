@@ -11,7 +11,7 @@ import { useEffect, useState } from "react";
 import { NavLink, useSearchParams } from "react-router";
 import Axios from "../utils/Axios";
 
-const History = () => {
+const Note = () => {
     let [searchParams] = useSearchParams();
     const today = new Date();
     const [postArgs, setPostArgs] = useState<{
@@ -50,10 +50,10 @@ const History = () => {
     });
 
     // stats
-    const { isLoading: statsLoading, isSuccess: statsSuccess, data: stats, refetch: statsRefect } = useQuery({
+    const { refetch: statsRefect } = useQuery({
         queryKey: ['stats'],
         queryFn: async () => {
-            const { data } = await Axios.get('/wdylt/v1/stats', {
+            const { data } = await Axios.get('/wp/v2/posts/stats', {
                 params: statsArgs,
                 headers: {
                     'Content-Type': 'application/json',
@@ -120,10 +120,6 @@ const History = () => {
     }
 
     useEffect(() => {
-        refetch();
-    }, [postArgs, refetch]);
-
-    useEffect(() => {
         const today = new Date();
         const todayBtn = document.querySelector('button.fc-today-button');
         todayBtn?.addEventListener('click', (event: any) => {
@@ -134,7 +130,9 @@ const History = () => {
                 after: formatISO(endOfDay(addDays(today, -1))),
             });
         });
-    }, [postArgs]);
+
+        refetch();
+    }, [postArgs, refetch]);
 
     useEffect(() => {
         statsRefect();
@@ -142,7 +140,7 @@ const History = () => {
 
     useEffect(() => {
         const from = searchParams.get('from');
-        if (from == 'submit' && isSuccess) {
+        if (from === 'submit' && isSuccess) {
             window.scrollTo(0, 300);
         }
     }, [searchParams, isSuccess]);
@@ -181,13 +179,13 @@ const History = () => {
                                         <div className="flex">
                                             <div className="block font-semibold">{format(post.date, 'dd MMMM yyyy HH:mm')}</div>
                                             <div className="ml-auto">
-                                                <NavLink className={'text-blue-700 text-sm'} to={{ pathname: '/', search: '?pid=' + post.id }}>{'Edit'}</NavLink>
+                                                <NavLink className={'text-blue-700 text-sm'} to={{ pathname: '/', search: `?pid=${post.id}&type=${post.type}` }}>{'Edit'}</NavLink>
                                             </div>
                                         </div>
                                         
-                                        <div className="block mt-0 Content ck-content formatted" dangerouslySetInnerHTML={{ __html: post.content.rendered }}></div>
+                                        <div className="block Content ck-content formatted p-4 bg-neutral-200 mt-2" dangerouslySetInnerHTML={{ __html: post.content.rendered }}></div>
                                         {post.tags.length > 0 ? (
-                                            <ul className="flex flex-wrap gap-2 mt-2">
+                                            <ul className="flex flex-wrap gap-2 mt-3">
                                                 {post.tags.map((tag: any) => (
                                                     <li key={tag.term_id}>
                                                         <NavLink to={{ pathname: '/tags/' + tag.term_id, search: '?term=' + tag.name }} end>
@@ -210,4 +208,4 @@ const History = () => {
     )
 }
 
-export default History;
+export default Note;

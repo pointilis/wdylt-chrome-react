@@ -5,7 +5,7 @@ import { Formik } from "formik";
 import * as Yup from 'yup';
 import Axios from "../utils/Axios";
 import { useEffect, useState } from "react";
-import { NavLink, redirect, useNavigate } from "react-router";
+import { NavLink, useNavigate } from "react-router";
 import logo from '../logo.png';
 
 const Login = () => {
@@ -62,7 +62,7 @@ const Login = () => {
                 }
             });
         }
-    }, [])
+    }, [navigate, runInChromeExt])
 
     return (
         <main className='Main p-4 text-lg'>
@@ -82,9 +82,8 @@ const Login = () => {
                 </div>
             </div>
             
-
             {loginMutation.isError && error ? (
-                <div className="mb-2 text-red-600" dangerouslySetInnerHTML={{ __html: error.message }}>{}</div>
+                <div className="mb-2 text-red-600" dangerouslySetInnerHTML={{ __html: error.message }}></div>
             ) : null}
 
             <Formik

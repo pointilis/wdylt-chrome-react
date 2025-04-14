@@ -1,7 +1,8 @@
 import axios from "axios";
 
 const Axios = axios.create({
-    baseURL: "https://learn.wdylt.com/wp-json",
+    baseURL: "http://localhost/www/wp/wdylt/wp-json",
+    // baseURL: "https://learn.wdylt.com/wp-json",
 });
 
 Axios.interceptors.request.use(async (config: any) => {
