@@ -24,7 +24,8 @@ const Archive = () => {
     const { isLoading, isSuccess, data } = useQuery({
         queryKey: ['posts'],
         queryFn: async () => {
-            const { data } = await Axios.get('/wp/v2/posts', {
+            const postType = searchParams.get('post_type');
+            const { data } = await Axios.get(`/wp/v2/${postType}s`, {
                 params: postArgs,
                 headers: {
                     'Content-Type': 'application/json',

@@ -1,8 +1,13 @@
 import axios from "axios";
 
+let endpoint: string = "http://localhost/www/wp/wdylt/wp-json";
+
+if (process.env.NODE_ENV && process.env.NODE_ENV === 'production') {
+    endpoint = "https://learn.wdylt.com/wp-json";
+}
+
 const Axios = axios.create({
-    baseURL: "http://localhost/www/wp/wdylt/wp-json",
-    // baseURL: "https://learn.wdylt.com/wp-json",
+    baseURL: endpoint,
 });
 
 Axios.interceptors.request.use(async (config: any) => {

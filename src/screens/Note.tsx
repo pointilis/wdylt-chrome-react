@@ -10,6 +10,7 @@ import interactionPlugin from "@fullcalendar/interaction" // needed for dayClick
 import { useEffect, useState } from "react";
 import { NavLink, useSearchParams } from "react-router";
 import Axios from "../utils/Axios";
+import TagsCloud from "../components/TagsClound";
 
 const Note = () => {
     let [searchParams] = useSearchParams();
@@ -156,6 +157,10 @@ const Note = () => {
                     datesSet={handleDateSet}
                     events={events}
                 />
+            </div>
+
+            <div className="mb-4">
+                <TagsCloud postType={['post']} />
             </div>
 
             {isLoading ? (

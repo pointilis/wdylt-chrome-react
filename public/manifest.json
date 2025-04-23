@@ -1,8 +1,8 @@
 {
   "short_name": "WDYLT",
-  "name": "What Did You Learn Today?",
-  "description": "Collect informations as learning path.",
-  "version": "1.0",
+  "name": "What Did You Learn Today? A Simplest Note",
+  "description": "Collect any information as a simple notes then convert to learning path. Save and access your notes from anywhere.",
+  "version": "1.1",
   "manifest_version": 3,
   "action": {
     "default_popup": "index.html",

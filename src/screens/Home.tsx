@@ -11,6 +11,10 @@ import Axios from "../utils/Axios";
 import { useMutation } from "@tanstack/react-query";
 import Swal from "sweetalert2";
 
+// todo
+// 1. fixing can't edit properly
+// 2. test tags for todos feature
+
 const Home = () => {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
@@ -31,7 +35,7 @@ const Home = () => {
         title?: string,
         content: string,
         status?: string,
-        tags?: string,
+        tags?: string | string[],
         meta?: any,
     }>({
         title: "",
@@ -88,7 +92,7 @@ const Home = () => {
     // update post
     const updatePostMutation = useMutation({
         mutationFn: async (variables: any) => {
-            const { data } = await Axios.post(`/wp/v2/${postType}s/${pid}`, variables);
+            const { data } = await Axios.put(`/wp/v2/${postType}s/${pid}`, variables.data);
             return data;
         },
     });
@@ -111,13 +115,15 @@ const Home = () => {
     }
 
     const PostSchema = Yup.object().shape({
-        content: Yup.string()
-            .required('Required'),
-        tags: Yup.string(),
+        content: Yup.string().required('Required'),
+        tags: Yup.string() || Yup.array().of(Yup.string()),
     });
 
     useEffect(() => {
-        const hasValues = Object.values(formValues).join(',').replace(/,/g, '') !== '';
+        const valuesTobeCheck = {...formValues};
+        delete valuesTobeCheck['meta'];
+        const hasValues = Object.values(valuesTobeCheck).join(',').replace(/,/g, '') !== '';
+ 
         if (hasValues) {
             if (runInChromeExt) {
                 chrome.storage.local.set({ post: formValues }).then(() => {
@@ -132,7 +138,7 @@ const Home = () => {
     useEffect(() => {
         if (runInChromeExt) {
             chrome.storage.local.get(["post"]).then((result) => {
-                if (result.post) {
+                if (result.post && result.post.content !== '') {
                     editoRef.current.setData(result.post.content);
                     setFormValues(result.post);
                 }
@@ -141,7 +147,7 @@ const Home = () => {
             let post: any = localStorage.getItem('post');
             post = post ? JSON.parse(post) : null;
 
-            if (post) {
+            if (post && post.content !== '') {
                 setTimeout(() => {
                     editoRef.current.setData(post.content);
                     setFormValues(post as any);
@@ -170,7 +176,7 @@ const Home = () => {
         } else {
             setPid('');
         }
-    }, [searchParams, retrivePostMutation]);
+    }, [searchParams]);
 
     return (
         <BaseLayout>
@@ -202,6 +208,7 @@ const Home = () => {
                         setErrors,
                     }) => {
                         let state: string = '';
+                        let payload = {...values};
                         if (postType === 'todo') {
                             state = await Swal.fire({
                                 title: 'Set Todo State',
@@ -224,22 +231,30 @@ const Home = () => {
                         }
                         
                         let data: any;
-                        let doc = new DOMParser().parseFromString(values.content, 'text/html');
+                        let doc = new DOMParser().parseFromString(payload.content, 'text/html');
                         let title =  doc.body.textContent || "";
-                        values = {
-                            ...values,
+                        payload = {
+                            ...payload,
                             status: 'publish',
                             title: title.substring(0, 200),
                         }
 
                         // set meta
                         if (postType === 'todo') {
-                            values = {
-                                ...values,
+                            payload = {
+                                ...payload,
                                 meta: {
-                                    ...values.meta,
+                                    ...payload.meta,
                                     'state': state,
                                 }
+                            }
+                        }
+
+                        // insert tags
+                        if (payload.tags) {
+                            payload = {
+                                ...payload,
+                                tags: ((payload.tags as any)?.split(',') as Array<string>).map(t => t.trim()),
                             }
                         }
 
@@ -247,13 +262,13 @@ const Home = () => {
                             // update
                             data = await updatePostMutation.mutateAsync({
                                 type: postType,
-                                data: values,
+                                data: payload,
                             });
                         } else {
                             // create
                             data = await submitMutation.mutateAsync({
                                 type: postType,
-                                data: values,
+                                data: payload,
                             });
                         }
 
@@ -297,7 +312,11 @@ const Home = () => {
                     }) => (
                         <form onSubmit={handleSubmit}>
                             <div className="flex items-center mb-2">
-                                <div className="text-xl font-bold">{'Save this as:'}</div>
+                                {pid ? (
+                                    <div className="text-xl font-bold">{`Update`} {postType === 'todo' ? 'Todo' : 'Note' }</div>
+                                ) : (
+                                    <div className="text-xl font-bold">{'Save this as:'}</div>
+                                )}
 
                                 {pid ? (
                                     <div className="ml-auto">
@@ -351,12 +370,10 @@ const Home = () => {
                                     ref={editoRef}
                                     onBlur={() => {}}
                                     onChange={(value: string) => {
-                                        setFieldTouched('content', true);
                                         setFormValues({
                                             ...formValues,
                                             content: value,
                                         });
-                                        setFieldValue('content', value);
 
                                         if (value === '') {
                                             // reset

@@ -6,7 +6,7 @@ const Nav = () => {
     return (
         <ul className="flex Navlink gap-3 relative">
             <li>
-                <NavLink to="/" className="px-2 py-1 text-base border border-neutral-400 rounded-full" end>{'Submit'}</NavLink>
+                <NavLink to="/" className="px-2 py-1 text-base border border-neutral-400 rounded-full" end>{'Compose'}</NavLink>
             </li>
 
             <li>
@@ -15,10 +15,6 @@ const Nav = () => {
 
             <li>
                 <NavLink to="/todos" className="px-2 py-1 text-base border border-neutral-400 rounded-full" end>{'Todos'}</NavLink>
-            </li>
-
-            <li>
-                <NavLink to="/tags" className="px-2 py-1 text-base border border-neutral-400 rounded-full" end>{'Tags'}</NavLink>
             </li>
         </ul>
     )
